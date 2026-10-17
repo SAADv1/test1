@@ -20,9 +20,9 @@ export class Room {
   constructor(el, L, { onExit, onHome, onInspect }) {
     this.el = el; this.L = L; this.code = L.code; this.onExit = onExit; this.onHome = onHome; this.onInspectCb = onInspect;
     this.isTouch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
-    const smallScreen = Math.min(screen.width, screen.height) < 820;
     // الأجهزة اللمسية (جوال وأيباد) تستخدم الجودة المتوازنة لضمان السلاسة
-    this.quality = { high: !this.isTouch && !smallScreen && (navigator.deviceMemory ?? 8) >= 4, bloom: true };
+    // جودة عالية على كل الأجهزة (كمبيوتر وجوال وأيباد)؛ تُخفَّض فقط للأجهزة ضعيفة الذاكرة
+    this.quality = { high: (navigator.deviceMemory ?? 8) >= 3, bloom: true };
     // وضع الاختبار السريع (?fast): دقة منخفضة دون ظلال أو توهج — لتسريع الاختبارات الآلية فقط
     this.fast = new URLSearchParams(location.search).has('fast');
     this.quality.bloom = false; // بلا توهج: يزيل السطوع حول الأضواء والشاشات
@@ -68,7 +68,8 @@ export class Room {
   async init() {
     this.buildDOM();
     const r = this.renderer = new THREE.WebGLRenderer({ canvas: this.cv, antialias: true, powerPreference: 'high-performance' });
-    this.maxPR = this.fast ? 0.5 : Math.min(devicePixelRatio || 1, this.quality.high ? 2 : 1.5); this.pr = this.maxPR;
+    this.maxPR = this.fast ? 0.5 : Math.min(devicePixelRatio || 1, 2); this.pr = this.maxPR;
+    this.minPR = this.fast ? 0.5 : Math.min(this.maxPR, this.isTouch ? 1.25 : 1);
     r.setPixelRatio(this.pr);
     r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping;
     r.shadowMap.enabled = !this.fast; r.shadowMap.type = THREE.PCFShadowMap;
@@ -393,12 +394,11 @@ export class Room {
   /** الحفاظ على السلاسة: يُطفأ التوهج أولاً ثم تُخفض دقة العرض إذا انخفض معدل الإطارات */
   adapt(dt) {
     if (this.fast) return;
-    this.ftimes.push(dt); if (this.ftimes.length < 60) return;
+    this.ftimes.push(dt); if (this.ftimes.length < 90) return;
     const avg = this.ftimes.reduce((a, b) => a + b, 0) / this.ftimes.length; this.ftimes = []; this.fps = 1 / avg;
-    if (avg > 1 / 38) {
-      if (this.quality.bloom && !this.quality.high) { this.quality.bloom = false; return; }
-      if (this.pr > 0.75) { this.pr = Math.max(0.75, this.pr - 0.25); this.renderer.setPixelRatio(this.pr); this.resize(); }
-    } else if (avg < 1 / 57 && this.pr < this.maxPR) { this.pr = Math.min(this.maxPR, this.pr + 0.25); this.renderer.setPixelRatio(this.pr); this.resize(); }
+    // تُخفض الدقة قليلاً فقط إذا هبط الأداء بوضوح (أقل من 26 إطاراً)، ولا تنزل تحت حد يحفظ الوضوح
+    if (avg > 1 / 26 && this.pr > this.minPR) { this.pr = Math.max(this.minPR, this.pr - 0.25); this.renderer.setPixelRatio(this.pr); this.resize(); }
+    else if (avg < 1 / 50 && this.pr < this.maxPR) { this.pr = Math.min(this.maxPR, this.pr + 0.25); this.renderer.setPixelRatio(this.pr); this.resize(); }
   }
 
   dispose() {
