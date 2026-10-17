@@ -50,8 +50,8 @@ function floorMats(kind, accent, rep = [1, 1]) {
     if (kind === 'tile' || kind === 'grating') { g.globalAlpha = 0.6; g.fillRect(S / 2 - 6, 0, 12, S); }
   }, { repeat: rep });
   const mat = new THREE.MeshStandardMaterial({
-    map: base, emissiveMap: glow, emissive: accent, emissiveIntensity: { radial: 0.9, epoxy: 0.55, hex: 0.7, court: 0.35, concrete: 0.25, tile: 0.25, grating: 0.4 }[kind] ?? 0,
-    roughness: { epoxy: 0.16, radial: 0.2, terrazzo: 0.22, concrete: 0.42, court: 0.32, grating: 0.45, hex: 0.2, tile: 0.18, wood: 0.38, gradient: 0.15 }[kind] ?? 0.4,
+    map: base, emissiveMap: glow, emissive: accent, emissiveIntensity: { radial: 0.45, epoxy: 0.3, hex: 0.35, court: 0.2, concrete: 0.15, tile: 0.15, grating: 0.2 }[kind] ?? 0,
+    roughness: { epoxy: 0.55, radial: 0.55, terrazzo: 0.6, concrete: 0.7, court: 0.6, grating: 0.6, hex: 0.55, tile: 0.5, wood: 0.65, gradient: 0.55 }[kind] ?? 0.6,
     metalness: kind === 'grating' ? 0.7 : 0.05,
   });
   return mat;
@@ -370,7 +370,7 @@ const ENVS = {
   /* 5-1 جناح الطاقة: قاعة بيضاوية بيضاء وأعمدة طاقة متوهجة */
   '5-1'(c) {
     const { scene, mats, quality } = c; const R = 9, H = 6.5, violet = '#b48cf0', sx = 1.0, sz = 1.2;
-    polyShell(scene, 36, R, H, { floor: new THREE.MeshStandardMaterial({ color: '#f3f2f6', roughness: 0.12, metalness: 0 }), wall: new THREE.MeshStandardMaterial({ color: '#fafafc', roughness: 0.6 }), ceil: new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8 }), sx, sz });
+    polyShell(scene, 36, R, H, { floor: new THREE.MeshStandardMaterial({ color: '#e4e2ea', roughness: 0.6, metalness: 0 }), wall: new THREE.MeshStandardMaterial({ color: '#fafafc', roughness: 0.6 }), ceil: new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8 }), sx, sz });
     // شرائط ضوئية متموجة على الجدار
     for (let lv = 0; lv < 3; lv++) { const pts = []; for (let k = 0; k <= 120; k++) { const a = k / 120 * TAU; pts.push(V(Math.sin(a) * (R - 0.08) * sx, 1.2 + lv * 1.6 + Math.sin(a * 5 + lv) * 0.35, Math.cos(a) * (R - 0.08) * sz)); } const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 360, 0.03, 6, true), mats.led(lv === 1 ? '#7ef0ff' : violet, 2.0)); scene.add(tube); }
     const flowTex = canvasTex(64, 512, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); [['#7ef0ff', 0], [violet, 0.33], ['#ffffff', 0.5], [violet, 0.66], ['#7ef0ff', 1]].forEach(([cl, s]) => gr.addColorStop(s, cl)); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, { repeat: [1, 2] });

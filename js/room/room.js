@@ -25,6 +25,7 @@ export class Room {
     this.quality = { high: !this.isTouch && !smallScreen && (navigator.deviceMemory ?? 8) >= 4, bloom: true };
     // وضع الاختبار السريع (?fast): دقة منخفضة دون ظلال أو توهج — لتسريع الاختبارات الآلية فقط
     this.fast = new URLSearchParams(location.search).has('fast');
+    this.quality.bloom = false; // بلا توهج: يزيل السطوع حول الأضواء والشاشات
     if (this.fast) Object.assign(this.quality, { high: false, bloom: false });
     this.color = L.chapter.color;
     this.ready = this.init();
@@ -81,7 +82,8 @@ export class Room {
     scene.background = new THREE.Color(env.bg); if (env.fog) scene.fog = new THREE.Fog(env.bg, env.fog[0], env.fog[1]);
     scene.environmentIntensity = (env.envI ?? 0.5) * 0.8; r.toneMappingExposure = (env.exposure ?? 1) * 0.8;
     // إضاءة أهدأ: تخفيف شدة كل مصادر الضوء في البيئة
-    scene.traverse((o) => { if (o.isLight) o.intensity *= o.isHemisphereLight ? 0.8 : 0.7; });
+    const spots = []; scene.traverse((o) => { if (o.isSpotLight) spots.push(o); else if (o.isLight) o.intensity *= o.isHemisphereLight ? 0.85 : 0.65; });
+    spots.forEach((l) => { l.parent.remove(l); l.target?.parent?.remove(l.target); }); // الأضواء المسلطة كانت تصنع بقعاً لامعة على الأرضيات
     this.stage = env.stage.clone(); this.daisTop = env.dais.top;
     this.buildTitle(); this.buildPlaques();
 

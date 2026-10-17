@@ -75,7 +75,7 @@ export function makeMaterials(quality) {
     chrome: new THREE.MeshStandardMaterial({ color: '#e8ecf2', roughness: 0.08, metalness: 1 }),
     brushed: new THREE.MeshStandardMaterial({ color: '#aab2bf', roughness: 0.34, metalness: 1 }),
     gold: new THREE.MeshStandardMaterial({ color: '#d9ac5f', roughness: 0.22, metalness: 1 }),
-    graphite: new P({ color: '#1c1f27', roughness: 0.38, metalness: 0.4, ...(quality.high ? { clearcoat: 0.6, clearcoatRoughness: 0.2 } : {}) }),
+    graphite: new P({ color: '#1c1f27', roughness: 0.55, metalness: 0.3 }),
     ceramic: new P({ color: '#f4f4f1', roughness: 0.25, metalness: 0, ...(quality.high ? { clearcoat: 0.8, clearcoatRoughness: 0.1 } : {}) }),
     glassTint: (c) => memo('g' + c, () => quality.high
       ? new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.08, metalness: 0, transmission: 0.9, thickness: 0.08, ior: 1.45, transparent: true })

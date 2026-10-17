@@ -76,7 +76,7 @@ export class WalkControls {
     }
     if (!this.enabled) return;
     const k = p.type === 'mouse' ? 0.0042 : 0.0058;
-    this.yaw += dx * k; this.pitch = THREE.MathUtils.clamp(this.pitch + dy * k, -1.2, 1.0);
+    this.yaw -= dx * k; this.pitch = THREE.MathUtils.clamp(this.pitch - dy * k, -1.2, 1.0);
   }
 
   up(e, cancelled = false) {
